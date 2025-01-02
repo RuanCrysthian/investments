@@ -4,7 +4,7 @@ import com.rferraz.investments.domain.dto.ViewInvestmentDto;
 import com.rferraz.investments.domain.entities.Gain;
 import com.rferraz.investments.domain.entities.Investment;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
-import com.rferraz.investments.domain.repository.InvestmentRepositoryInterface;
+import com.rferraz.investments.infra.repository.InvestmentRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -14,9 +14,9 @@ import java.util.Optional;
 @Service
 public class InvestmentService {
 
-  private final InvestmentRepositoryInterface repository;
+  private final InvestmentRepository repository;
 
-  public InvestmentService(InvestmentRepositoryInterface repository) {
+  public InvestmentService(InvestmentRepository repository) {
     this.repository = repository;
   }
 

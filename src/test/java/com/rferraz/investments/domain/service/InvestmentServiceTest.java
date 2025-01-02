@@ -3,7 +3,7 @@ package com.rferraz.investments.domain.service;
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
 import com.rferraz.investments.domain.entities.Investment;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
-import com.rferraz.investments.domain.repository.InvestmentRepositoryInterface;
+import com.rferraz.investments.infra.repository.InvestmentRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +19,7 @@ import java.util.Optional;
 class InvestmentServiceTest {
 
   @Mock
-  private InvestmentRepositoryInterface repository;
+  private InvestmentRepository repository;
 
   @InjectMocks
   private InvestmentService service;
