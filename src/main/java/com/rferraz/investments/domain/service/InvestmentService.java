@@ -28,6 +28,7 @@ public class InvestmentService {
     String id = investment.get().getId();
     BigDecimal amount = investment.get().getAmount();
     BigDecimal expectedBalance = Gain.calculate(amount, investment.get().getCreationDate(), LocalDateTime.now());
+    if (investment.get().getWasWithdrawal()) expectedBalance = BigDecimal.ZERO;
     return new ViewInvestmentDto(id, amount, expectedBalance);
   }
 }

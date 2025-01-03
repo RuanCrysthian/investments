@@ -12,14 +12,18 @@ public class Investment {
 
   private final String id;
   private final String ownerId;
-  private final BigDecimal amount;
+  private BigDecimal amount;
   private final LocalDateTime creationDate;
+  private Boolean wasWithdrawal;
+  private LocalDateTime withdrawalDate;
 
   private Investment(String ownerId, BigDecimal amount, LocalDateTime creationDate) {
     this.id = UUID.randomUUID().toString();
     this.ownerId = ownerId;
     this.amount = amount;
     this.creationDate = creationDate;
+    this.wasWithdrawal = Boolean.FALSE;
+    this.withdrawalDate = null;
     this.validate();
   }
 
@@ -45,6 +49,12 @@ public class Investment {
     }
   }
 
+  public void withdrawal() {
+    amount = BigDecimal.ZERO;
+    wasWithdrawal = Boolean.TRUE;
+    withdrawalDate = LocalDateTime.now();
+  }
+
   public String getId() {
     return id;
   }
@@ -59,5 +69,13 @@ public class Investment {
 
   public LocalDateTime getCreationDate() {
     return creationDate;
+  }
+
+  public Boolean getWasWithdrawal() {
+    return wasWithdrawal;
+  }
+
+  public LocalDateTime getWithdrawalDate() {
+    return withdrawalDate;
   }
 }

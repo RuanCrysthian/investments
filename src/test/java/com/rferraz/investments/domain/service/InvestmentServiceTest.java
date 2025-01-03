@@ -54,4 +54,20 @@ class InvestmentServiceTest {
     Assertions.assertNotNull(result.expectedBalance());
     Mockito.verify(repository, Mockito.times(1)).findById(investment.getId());
   }
+
+  @Test
+  void shouldInvestmentExpectedBalanceEqualZeroWhenInvestmentAlreadyWasWithdrawal() {
+    Investment investment = Investment.createInvestment(
+      "123",
+      new BigDecimal("1000"),
+      LocalDateTime.of(2024, 1, 1, 10, 0)
+    );
+    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+    investment.withdrawal();
+    ViewInvestmentDto result = service.view(investment.getId());
+
+    Assertions.assertEquals(Boolean.TRUE, investment.getWasWithdrawal());
+    Assertions.assertEquals(BigDecimal.ZERO, investment.getAmount());
+    Assertions.assertEquals(BigDecimal.ZERO, result.expectedBalance());
+  }
 }

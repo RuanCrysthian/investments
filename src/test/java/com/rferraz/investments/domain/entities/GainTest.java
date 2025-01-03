@@ -60,16 +60,6 @@ class GainTest {
   }
 
   @Test
-  void shouldThrowFieldIsRequiredExceptionWhenAmountIsZero() {
-    Assertions.assertThrows(InvalidAmountException.class, () -> {
-      BigDecimal amount = BigDecimal.ZERO;
-      LocalDateTime creationDate = LocalDateTime.of(2023, 1, 15, 10, 0);
-      LocalDateTime currentDate = LocalDateTime.of(2023, 4, 15, 10, 0);
-      Gain.calculate(amount, creationDate, currentDate);
-    });
-  }
-
-  @Test
   void shouldThrowFieldIsRequiredExceptionWhenAmountIsNegative() {
     Assertions.assertThrows(InvalidAmountException.class, () -> {
       BigDecimal amount = new BigDecimal("-1000.00");

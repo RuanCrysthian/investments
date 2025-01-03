@@ -39,7 +39,7 @@ public class Gain {
     if (currentDate.isBefore(creationDate)) {
       throw new InvalidCurrentDateException("currentDate should be after creationDate");
     }
-    if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    if (amount.compareTo(BigDecimal.ZERO) < 0) {
       throw new InvalidAmountException("amount should be greater than zero");
     }
   }
