@@ -1,6 +1,7 @@
 package com.rferraz.investments.domain.service;
 
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
+import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
 import com.rferraz.investments.domain.entities.Investment;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
 import com.rferraz.investments.infra.repository.InvestmentRepository;
@@ -69,5 +70,43 @@ class InvestmentServiceTest {
     Assertions.assertEquals(Boolean.TRUE, investment.getWasWithdrawal());
     Assertions.assertEquals(BigDecimal.ZERO, investment.getAmount());
     Assertions.assertEquals(BigDecimal.ZERO, result.expectedBalance());
+  }
+
+  @Test
+  void shouldWithdrawInvestmentSuccessfully() {
+    BigDecimal expectedAmount = BigDecimal.ZERO;
+    BigDecimal expectedGain = new BigDecimal("1064.22");
+    BigDecimal expectedTax = new BigDecimal("11.88");
+    BigDecimal expectedWithdrawalValue = new BigDecimal("1052.34");
+    Investment investment = Investment.createInvestment(
+      "123",
+      new BigDecimal("1000"),
+      LocalDateTime.now().minusYears(1)
+    );
+    InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
+    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+
+    InvestmentService service = new InvestmentService(repository);
+
+    WithdrawalInvestmentDto result = service.withdrawalInvestment(investment.getId());
+
+    Assertions.assertEquals(expectedAmount, result.amount());
+    Assertions.assertEquals(expectedGain, result.gain());
+    Assertions.assertEquals(expectedTax, result.tax());
+    Assertions.assertEquals(expectedWithdrawalValue, result.withdrawalValue());
+    Assertions.assertNotNull(result.creationDate());
+    Assertions.assertNotNull(result.withdrawalDate());
+    Mockito.verify(repository).save(investment);
+  }
+
+  @Test
+  void shouldThrowEntityNotFoundExceptionWhenInvestmentDoesNotExist() {
+    String investmentId = "123";
+    InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
+    Mockito.when(repository.findById(investmentId)).thenReturn(Optional.empty());
+
+    InvestmentService service = new InvestmentService(repository);
+
+    Assertions.assertThrows(EntityNotFoundException.class, () -> service.withdrawalInvestment(investmentId));
   }
 }

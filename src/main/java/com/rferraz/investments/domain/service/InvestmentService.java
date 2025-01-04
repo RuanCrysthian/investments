@@ -1,8 +1,10 @@
 package com.rferraz.investments.domain.service;
 
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
+import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
 import com.rferraz.investments.domain.entities.Gain;
 import com.rferraz.investments.domain.entities.Investment;
+import com.rferraz.investments.domain.entities.TaxCalculator;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
 import com.rferraz.investments.infra.repository.InvestmentRepository;
 import org.springframework.stereotype.Service;
@@ -30,5 +32,29 @@ public class InvestmentService {
     BigDecimal expectedBalance = Gain.calculate(amount, investment.get().getCreationDate(), LocalDateTime.now());
     if (investment.get().getWasWithdrawal()) expectedBalance = BigDecimal.ZERO;
     return new ViewInvestmentDto(id, amount, expectedBalance);
+  }
+
+  public WithdrawalInvestmentDto withdrawalInvestment(String investmentId) {
+    Optional<Investment> optionalInvestment = repository.findById(investmentId);
+    if (optionalInvestment.isEmpty()) {
+      throw new EntityNotFoundException("investment not found");
+    }
+    Investment investment = optionalInvestment.get();
+    BigDecimal gain = Gain.calculate(investment.getAmount(), investment.getCreationDate(), LocalDateTime.now());
+    BigDecimal profit = gain.subtract(investment.getAmount());
+    TaxCalculator taxCalculator = new TaxCalculator();
+    BigDecimal tax = taxCalculator.calculateTax(investment.getCreationDate(), LocalDateTime.now(), profit);
+    BigDecimal withdrawalValue = gain.subtract(tax);
+    investment.withdrawal();
+    repository.save(investment);
+    return new WithdrawalInvestmentDto(
+      investment.getId(),
+      investment.getAmount(),
+      gain,
+      tax,
+      withdrawalValue,
+      investment.getCreationDate(),
+      investment.getWithdrawalDate()
+    );
   }
 }
