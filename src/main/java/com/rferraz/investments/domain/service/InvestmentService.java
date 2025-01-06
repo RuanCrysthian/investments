@@ -1,5 +1,7 @@
 package com.rferraz.investments.domain.service;
 
+import com.rferraz.investments.domain.dto.InsertInvestmentInputDto;
+import com.rferraz.investments.domain.dto.InsertInvestmentOutputDto;
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
 import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
 import com.rferraz.investments.domain.entities.Gain;
@@ -8,6 +10,7 @@ import com.rferraz.investments.domain.entities.TaxCalculator;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
 import com.rferraz.investments.infra.repository.InvestmentRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -54,6 +57,20 @@ public class InvestmentService {
       tax,
       withdrawalValue,
       investment.getCreationDate(),
+      investment.getWithdrawalDate()
+    );
+  }
+
+  @Transactional
+  public InsertInvestmentOutputDto insertInvestment(InsertInvestmentInputDto input) {
+    Investment investment = Investment.createInvestment(input.ownerId(), input.amount(), input.creationDate());
+    repository.save(investment);
+    return new InsertInvestmentOutputDto(
+      investment.getId(),
+      investment.getOwnerId(),
+      investment.getAmount(),
+      investment.getCreationDate(),
+      investment.getWasWithdrawal(),
       investment.getWithdrawalDate()
     );
   }
