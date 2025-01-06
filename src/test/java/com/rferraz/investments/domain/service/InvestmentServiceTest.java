@@ -1,5 +1,7 @@
 package com.rferraz.investments.domain.service;
 
+import com.rferraz.investments.domain.dto.InsertInvestmentInputDto;
+import com.rferraz.investments.domain.dto.InsertInvestmentOutputDto;
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
 import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
 import com.rferraz.investments.domain.entities.Investment;
@@ -73,7 +75,7 @@ class InvestmentServiceTest {
   }
 
   @Test
-  void shouldWithdrawInvestmentSuccessfully() {
+  void shouldWithdrawInvestmentWithAgeBetweenOneAndTwoYearsSuccessfully() {
     BigDecimal expectedAmount = BigDecimal.ZERO;
     BigDecimal expectedGain = new BigDecimal("1064.22");
     BigDecimal expectedTax = new BigDecimal("11.88");
@@ -100,6 +102,61 @@ class InvestmentServiceTest {
   }
 
   @Test
+  void shouldWithdrawInvestmentWithAgeOlderThanTwoYearsSuccessfully() {
+    BigDecimal expectedAmount = BigDecimal.ZERO;
+    BigDecimal expectedGain = new BigDecimal("1282.68");
+    BigDecimal expectedTax = new BigDecimal("42.40");
+    BigDecimal expectedWithdrawalValue = new BigDecimal("1240.28");
+    Investment investment = Investment.createInvestment(
+      "123",
+      new BigDecimal("1000"),
+      LocalDateTime.now().minusYears(4)
+    );
+    InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
+    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+
+    InvestmentService service = new InvestmentService(repository);
+
+    WithdrawalInvestmentDto result = service.withdrawalInvestment(investment.getId());
+
+    Assertions.assertEquals(expectedAmount, result.amount());
+    Assertions.assertEquals(expectedGain, result.gain());
+    Assertions.assertEquals(expectedTax, result.tax());
+    Assertions.assertEquals(expectedWithdrawalValue, result.withdrawalValue());
+    Assertions.assertNotNull(result.creationDate());
+    Assertions.assertNotNull(result.withdrawalDate());
+    Mockito.verify(repository).save(investment);
+  }
+
+  @Test
+  void shouldWithdrawInvestmentWithAgeLessThanOneYearSuccessfully() {
+    BigDecimal expectedAmount = BigDecimal.ZERO;
+    BigDecimal expectedGain = new BigDecimal("1010.43");
+    BigDecimal expectedTax = new BigDecimal("2.35");
+    BigDecimal expectedWithdrawalValue = new BigDecimal("1008.08");
+    Investment investment = Investment.createInvestment(
+      "123",
+      new BigDecimal("1000"),
+      LocalDateTime.now().minusMonths(2)
+    );
+    InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
+    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+
+    InvestmentService service = new InvestmentService(repository);
+
+    WithdrawalInvestmentDto result = service.withdrawalInvestment(investment.getId());
+
+    Assertions.assertEquals(expectedAmount, result.amount());
+    Assertions.assertEquals(expectedGain, result.gain());
+    Assertions.assertEquals(expectedTax, result.tax());
+    Assertions.assertEquals(expectedWithdrawalValue, result.withdrawalValue());
+    Assertions.assertNotNull(result.creationDate());
+    Assertions.assertNotNull(result.withdrawalDate());
+    Mockito.verify(repository).save(investment);
+  }
+
+
+  @Test
   void shouldThrowEntityNotFoundExceptionWhenInvestmentDoesNotExist() {
     String investmentId = "123";
     InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
@@ -108,5 +165,22 @@ class InvestmentServiceTest {
     InvestmentService service = new InvestmentService(repository);
 
     Assertions.assertThrows(EntityNotFoundException.class, () -> service.withdrawalInvestment(investmentId));
+  }
+
+  @Test
+  void shouldInsertCorrectlyAnInvestment() {
+    String ownerId = "123";
+    BigDecimal amount = new BigDecimal("1000");
+    LocalDateTime creationDate = LocalDateTime.now().minusMonths(2);
+    InsertInvestmentInputDto input = new InsertInvestmentInputDto(ownerId, amount, creationDate);
+
+    InsertInvestmentOutputDto result = service.insertInvestment(input);
+
+    Assertions.assertNotNull(result.id());
+    Assertions.assertEquals(input.ownerId(), result.ownerId());
+    Assertions.assertEquals(input.amount(), result.amount());
+    Assertions.assertEquals(input.creationDate(), result.creationDate());
+    Assertions.assertFalse(result.wasWithdrawal());
+    Assertions.assertNull(result.withdrawalDate());
   }
 }
