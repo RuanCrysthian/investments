@@ -27,8 +27,22 @@ public class Investment {
     this.validate();
   }
 
+  private Investment(String id, String ownerId, BigDecimal amount, LocalDateTime creationDate, Boolean wasWithdrawal, LocalDateTime withdrawalDate) {
+    this.id = id;
+    this.ownerId = ownerId;
+    this.amount = amount;
+    this.creationDate = creationDate;
+    this.wasWithdrawal = wasWithdrawal;
+    this.withdrawalDate = withdrawalDate;
+    this.validate();
+  }
+
   public static Investment createInvestment(String ownerId, BigDecimal amount, LocalDateTime creation) {
     return new Investment(ownerId, amount, creation);
+  }
+
+  public static Investment createInvestment(String id, String ownerId, BigDecimal amount, LocalDateTime creation, Boolean wasWithdrawal, LocalDateTime withdrawalDate) {
+    return new Investment(id, ownerId, amount, creation, wasWithdrawal, withdrawalDate);
   }
 
   private void validate() {
@@ -38,7 +52,7 @@ public class Investment {
     if (this.amount == null) {
       throw new FieldIsRequiredException("amount is required");
     }
-    if (this.amount.compareTo(BigDecimal.ZERO) <= 0) {
+    if (!this.wasWithdrawal && this.amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new InvalidAmountException("amount should be greater than zero");
     }
     if (this.creationDate == null) {

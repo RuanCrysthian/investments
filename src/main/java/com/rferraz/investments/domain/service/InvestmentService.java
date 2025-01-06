@@ -8,7 +8,8 @@ import com.rferraz.investments.domain.entities.Gain;
 import com.rferraz.investments.domain.entities.Investment;
 import com.rferraz.investments.domain.entities.TaxCalculator;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
-import com.rferraz.investments.infra.repository.InvestmentRepository;
+import com.rferraz.investments.domain.exceptions.InvestmentAlreadyWithdrawException;
+import com.rferraz.investments.domain.repository.InvestmentRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,7 +34,9 @@ public class InvestmentService {
     String id = investment.get().getId();
     BigDecimal amount = investment.get().getAmount();
     BigDecimal expectedBalance = Gain.calculate(amount, investment.get().getCreationDate(), LocalDateTime.now());
-    if (investment.get().getWasWithdrawal()) expectedBalance = BigDecimal.ZERO;
+    if (investment.get().getWasWithdrawal()) {
+      throw new InvestmentAlreadyWithdrawException("investment already withdrawal");
+    }
     return new ViewInvestmentDto(id, amount, expectedBalance);
   }
 

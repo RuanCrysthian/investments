@@ -6,7 +6,8 @@ import com.rferraz.investments.domain.dto.ViewInvestmentDto;
 import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
 import com.rferraz.investments.domain.entities.Investment;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
-import com.rferraz.investments.infra.repository.InvestmentRepository;
+import com.rferraz.investments.domain.exceptions.InvestmentAlreadyWithdrawException;
+import com.rferraz.investments.domain.repository.InvestmentRepository;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -60,18 +61,16 @@ class InvestmentServiceTest {
 
   @Test
   void shouldInvestmentExpectedBalanceEqualZeroWhenInvestmentAlreadyWasWithdrawal() {
-    Investment investment = Investment.createInvestment(
-      "123",
-      new BigDecimal("1000"),
-      LocalDateTime.of(2024, 1, 1, 10, 0)
-    );
-    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
-    investment.withdrawal();
-    ViewInvestmentDto result = service.view(investment.getId());
-
-    Assertions.assertEquals(Boolean.TRUE, investment.getWasWithdrawal());
-    Assertions.assertEquals(BigDecimal.ZERO, investment.getAmount());
-    Assertions.assertEquals(BigDecimal.ZERO, result.expectedBalance());
+    Assertions.assertThrows(InvestmentAlreadyWithdrawException.class, () -> {
+      Investment investment = Investment.createInvestment(
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.of(2024, 1, 1, 10, 0)
+      );
+      Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+      investment.withdrawal();
+      ViewInvestmentDto result = service.view(investment.getId());
+    });
   }
 
   @Test
@@ -182,5 +181,12 @@ class InvestmentServiceTest {
     Assertions.assertEquals(input.creationDate(), result.creationDate());
     Assertions.assertFalse(result.wasWithdrawal());
     Assertions.assertNull(result.withdrawalDate());
+  }
+
+  @Test
+  void shouldThrowInvestmentAlreadyWithdrawExceptionWhenWasWithdrawIsTrue() {
+    Assertions.assertThrows(InvestmentAlreadyWithdrawException.class, () -> {
+
+    });
   }
 }
