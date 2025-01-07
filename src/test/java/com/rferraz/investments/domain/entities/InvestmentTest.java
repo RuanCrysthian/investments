@@ -105,4 +105,30 @@ class InvestmentTest {
     Assertions.assertEquals(Boolean.TRUE, result.getWasWithdrawal());
     Assertions.assertNotNull(result.getWithdrawalDate());
   }
+
+  @Test
+  void shouldCreateInvestmentWithAllFields() {
+    String id = "1";
+    String ownerId = "2";
+    BigDecimal amount = new BigDecimal("1000");
+    LocalDateTime creationDate = LocalDateTime.now().minusYears(1);
+    Boolean wasWithdrawal = Boolean.TRUE;
+    LocalDateTime withdrawalDate = LocalDateTime.now();
+
+    Investment investment = Investment.createInvestment(
+      id,
+      ownerId,
+      amount,
+      creationDate,
+      wasWithdrawal,
+      withdrawalDate
+    );
+
+    Assertions.assertEquals(id, investment.getId());
+    Assertions.assertEquals(ownerId, investment.getOwnerId());
+    Assertions.assertEquals(amount, investment.getAmount());
+    Assertions.assertEquals(creationDate, investment.getCreationDate());
+    Assertions.assertEquals(wasWithdrawal, investment.getWasWithdrawal());
+    Assertions.assertEquals(withdrawalDate, investment.getWithdrawalDate());
+  }
 }

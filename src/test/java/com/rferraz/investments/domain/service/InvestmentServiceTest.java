@@ -186,7 +186,15 @@ class InvestmentServiceTest {
   @Test
   void shouldThrowInvestmentAlreadyWithdrawExceptionWhenWasWithdrawIsTrue() {
     Assertions.assertThrows(InvestmentAlreadyWithdrawException.class, () -> {
+      Investment investment = Investment.createInvestment(
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.of(2024, 1, 1, 10, 0)
+      );
+      Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+      investment.withdrawal();
 
+      service.view(investment.getId());
     });
   }
 }
