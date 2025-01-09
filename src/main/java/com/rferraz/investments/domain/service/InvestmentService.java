@@ -1,5 +1,13 @@
 package com.rferraz.investments.domain.service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.rferraz.investments.domain.dto.GetInvestmentDto;
 import com.rferraz.investments.domain.dto.InsertInvestmentInputDto;
 import com.rferraz.investments.domain.dto.InsertInvestmentOutputDto;
 import com.rferraz.investments.domain.dto.ViewInvestmentDto;
@@ -10,12 +18,6 @@ import com.rferraz.investments.domain.entities.TaxCalculator;
 import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
 import com.rferraz.investments.domain.exceptions.InvestmentAlreadyWithdrawException;
 import com.rferraz.investments.domain.repository.InvestmentRepository;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 public class InvestmentService {
@@ -54,14 +56,13 @@ public class InvestmentService {
     investment.withdrawal();
     repository.save(investment);
     return new WithdrawalInvestmentDto(
-      investment.getId(),
-      investment.getAmount(),
-      gain,
-      tax,
-      withdrawalValue,
-      investment.getCreationDate(),
-      investment.getWithdrawalDate()
-    );
+        investment.getId(),
+        investment.getAmount(),
+        gain,
+        tax,
+        withdrawalValue,
+        investment.getCreationDate(),
+        investment.getWithdrawalDate());
   }
 
   @Transactional
@@ -69,12 +70,23 @@ public class InvestmentService {
     Investment investment = Investment.createInvestment(input.ownerId(), input.amount(), input.creationDate());
     repository.save(investment);
     return new InsertInvestmentOutputDto(
-      investment.getId(),
-      investment.getOwnerId(),
-      investment.getAmount(),
-      investment.getCreationDate(),
-      investment.getWasWithdrawal(),
-      investment.getWithdrawalDate()
-    );
+        investment.getId(),
+        investment.getOwnerId(),
+        investment.getAmount(),
+        investment.getCreationDate(),
+        investment.getWasWithdrawal(),
+        investment.getWithdrawalDate());
+  }
+
+  public GetInvestmentDto find(String investmentId) {
+    Optional<Investment> investment = repository.findById(investmentId);
+    if (investment.isEmpty()) {
+      throw new EntityNotFoundException("investment not found");
+    }
+    return new GetInvestmentDto(
+        investment.get().getId(),
+        investment.get().getOwnerId(),
+        investment.get().getAmount(),
+        investment.get().getCreationDate());
   }
 }

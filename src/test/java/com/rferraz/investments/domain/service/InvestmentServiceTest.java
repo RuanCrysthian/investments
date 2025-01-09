@@ -1,13 +1,9 @@
 package com.rferraz.investments.domain.service;
 
-import com.rferraz.investments.domain.dto.InsertInvestmentInputDto;
-import com.rferraz.investments.domain.dto.InsertInvestmentOutputDto;
-import com.rferraz.investments.domain.dto.ViewInvestmentDto;
-import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
-import com.rferraz.investments.domain.entities.Investment;
-import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
-import com.rferraz.investments.domain.exceptions.InvestmentAlreadyWithdrawException;
-import com.rferraz.investments.domain.repository.InvestmentRepository;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,9 +12,15 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.Optional;
+import com.rferraz.investments.domain.dto.GetInvestmentDto;
+import com.rferraz.investments.domain.dto.InsertInvestmentInputDto;
+import com.rferraz.investments.domain.dto.InsertInvestmentOutputDto;
+import com.rferraz.investments.domain.dto.ViewInvestmentDto;
+import com.rferraz.investments.domain.dto.WithdrawalInvestmentDto;
+import com.rferraz.investments.domain.entities.Investment;
+import com.rferraz.investments.domain.exceptions.EntityNotFoundException;
+import com.rferraz.investments.domain.exceptions.InvestmentAlreadyWithdrawException;
+import com.rferraz.investments.domain.repository.InvestmentRepository;
 
 class InvestmentServiceTest {
 
@@ -45,10 +47,9 @@ class InvestmentServiceTest {
   @Test
   void shouldViewAnInvestmentCorrectly() {
     Investment investment = Investment.createInvestment(
-      "123",
-      new BigDecimal("1000"),
-      LocalDateTime.of(2024, 1, 1, 10, 0)
-    );
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.of(2024, 1, 1, 10, 0));
     Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
 
     ViewInvestmentDto result = service.view(investment.getId());
@@ -63,13 +64,12 @@ class InvestmentServiceTest {
   void shouldInvestmentExpectedBalanceEqualZeroWhenInvestmentAlreadyWasWithdrawal() {
     Assertions.assertThrows(InvestmentAlreadyWithdrawException.class, () -> {
       Investment investment = Investment.createInvestment(
-        "123",
-        new BigDecimal("1000"),
-        LocalDateTime.of(2024, 1, 1, 10, 0)
-      );
+          "123",
+          new BigDecimal("1000"),
+          LocalDateTime.of(2024, 1, 1, 10, 0));
       Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
       investment.withdrawal();
-      ViewInvestmentDto result = service.view(investment.getId());
+      service.view(investment.getId());
     });
   }
 
@@ -80,10 +80,9 @@ class InvestmentServiceTest {
     BigDecimal expectedTax = new BigDecimal("11.88");
     BigDecimal expectedWithdrawalValue = new BigDecimal("1052.34");
     Investment investment = Investment.createInvestment(
-      "123",
-      new BigDecimal("1000"),
-      LocalDateTime.now().minusYears(1)
-    );
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.now().minusYears(1));
     InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
     Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
 
@@ -107,10 +106,9 @@ class InvestmentServiceTest {
     BigDecimal expectedTax = new BigDecimal("42.40");
     BigDecimal expectedWithdrawalValue = new BigDecimal("1240.28");
     Investment investment = Investment.createInvestment(
-      "123",
-      new BigDecimal("1000"),
-      LocalDateTime.now().minusYears(4)
-    );
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.now().minusYears(4));
     InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
     Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
 
@@ -134,10 +132,9 @@ class InvestmentServiceTest {
     BigDecimal expectedTax = new BigDecimal("2.35");
     BigDecimal expectedWithdrawalValue = new BigDecimal("1008.08");
     Investment investment = Investment.createInvestment(
-      "123",
-      new BigDecimal("1000"),
-      LocalDateTime.now().minusMonths(2)
-    );
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.now().minusMonths(2));
     InvestmentRepository repository = Mockito.mock(InvestmentRepository.class);
     Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
 
@@ -153,7 +150,6 @@ class InvestmentServiceTest {
     Assertions.assertNotNull(result.withdrawalDate());
     Mockito.verify(repository).save(investment);
   }
-
 
   @Test
   void shouldThrowEntityNotFoundExceptionWhenInvestmentDoesNotExist() {
@@ -187,14 +183,39 @@ class InvestmentServiceTest {
   void shouldThrowInvestmentAlreadyWithdrawExceptionWhenWasWithdrawIsTrue() {
     Assertions.assertThrows(InvestmentAlreadyWithdrawException.class, () -> {
       Investment investment = Investment.createInvestment(
-        "123",
-        new BigDecimal("1000"),
-        LocalDateTime.of(2024, 1, 1, 10, 0)
-      );
+          "123",
+          new BigDecimal("1000"),
+          LocalDateTime.of(2024, 1, 1, 10, 0));
       Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
       investment.withdrawal();
 
       service.view(investment.getId());
     });
+  }
+
+  @Test
+  void shouldThrowEntityNotFoundExceptionWhenInvestmentDoesNotExistOnFind() {
+    Assertions.assertThrows(EntityNotFoundException.class, () -> {
+      String investmentId = "123";
+      Mockito.when(repository.findById(investmentId)).thenReturn(Optional.empty());
+
+      service.find(investmentId);
+    });
+  }
+
+  @Test
+  void shouldReturnAGetInvestmentDtoWhenFindAnInvestment() {
+    Investment investment = Investment.createInvestment(
+        "123",
+        new BigDecimal("1000"),
+        LocalDateTime.of(2024, 1, 1, 10, 0));
+    Mockito.when(repository.findById(investment.getId())).thenReturn(Optional.of(investment));
+
+    GetInvestmentDto result = service.find(investment.getId());
+
+    Assertions.assertEquals(investment.getId(), result.id());
+    Assertions.assertEquals(investment.getOwnerId(), result.ownerId());
+    Assertions.assertEquals(investment.getAmount(), result.amount());
+    Assertions.assertEquals(investment.getCreationDate(), result.creationDate());
   }
 }
